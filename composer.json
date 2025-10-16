@@ -1,0 +1,15 @@
+{
+    "name": "admin/csdl-school-management",
+    "autoload": {
+        "psr-4": {
+            "Admin\\CsdlSchoolManagement\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "DLdevcoder",
+            "email": "dtlong1410@gmail.com"
+        }
+    ],
+    "require": {}
+}
