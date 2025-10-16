@@ -11,5 +11,8 @@
             "email": "dtlong1410@gmail.com"
         }
     ],
-    "require": {}
+    "require-dev": {
+        "phpmd/phpmd": "^2.15",
+        "phploc/phploc": "^7.0"
+    }
 }
