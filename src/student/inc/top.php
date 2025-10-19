@@ -1,3 +1,13 @@
+<?php
+// Tự động xác định BASE_URL (đường dẫn web tới thư mục project)
+if (!defined('BASE_URL')) {
+    $docRoot = str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT']));
+    $projectRoot = str_replace('\\', '/', realpath(__DIR__ . '/../../..')); 
+    $base = '/' . trim(str_replace($docRoot, '', $projectRoot), '/');
+    if ($base === '/') $base = '';
+    define('BASE_URL', $base);
+}
+?>
 <!doctype html>
 <html lang="en">
   <head>
@@ -9,11 +19,12 @@
 
     <title>UET</title>
 
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/custom.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/css/bootstrap.min.css">
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/css/custom.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css">
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css?family=Raleway:300,400">
+   
     <style>
       body {
         font-family: 'Raleway', sans-serif;

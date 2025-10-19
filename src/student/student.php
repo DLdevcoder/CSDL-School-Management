@@ -1,10 +1,10 @@
 <?php
-include('inc/top.php');
+require_once __DIR__ . '/inc/top.php';
 ?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-lg-12 mt-2">
-            <?php include('inc/navbar.php'); ?>
+            <?php include __DIR__ . '/inc/navbar.php'; ?>
         </div>
     </div>
 
@@ -30,21 +30,21 @@ include('inc/top.php');
                         <th>Elon Musk</th>
                         <th>10</th>
                         <th>10/IT/ENG</th>
-                        <th><img src="images/student/Elon_Musk.jpg" alt="student-001" class="img-fluid"></th>
+                        <th><img src="../../images/student/Elon_Musk.jpg" alt="student-001" class="img-fluid"></th>
                     </tr>
                     <tr>
                         <th>002</th>
                         <th>Zhong Xina</th>
                         <th>10</th>
                         <th>10/IT/ENG</th>
-                        <th><img src="images/student/Zhong_Xina.jpg" alt="student-002" class="img-fluid"></th>
+                        <th><img src="../../images/student/Zhong_Xina.jpg" alt="student-002" class="img-fluid"></th>
                     </tr>
                     <tr>
                         <th>003</th>
                         <th>The Wok</th>
                         <th>10</th>
                         <th>10/IT/ENG</th>
-                        <th><img src="images/student/The_Wok.jpg" alt="student-003" class="img-fluid"></th>
+                        <th><img src="../../images/student/The_Wok.jpg" alt="student-003" class="img-fluid"></th>
                     </tr>
 
                 </tbody>
@@ -56,13 +56,13 @@ include('inc/top.php');
                     <h4 class="card-title text-center">Parents's Review</h4>
                 </div>
             </div>
-            <img src="images/parents-review.png" alt="review" class="img-fluid">
+            <img src="../../images/parents-review.png" alt="review" class="img-fluid">
         </div>
     </div>
 
     <div class="container-fluid">
         <div class="row bg-dark mt-2 p-3">
-            <?php include('inc/footer.php'); ?>
+            <?php include __DIR__ . '/inc/footer.php'; ?>
         </div>
     </div>
 </div>

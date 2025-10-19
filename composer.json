@@ -1,18 +1,15 @@
 {
-    "name": "admin/csdl-school-management",
-    "autoload": {
-        "psr-4": {
-            "Admin\\CsdlSchoolManagement\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "DLdevcoder",
-            "email": "dtlong1410@gmail.com"
-        }
-    ],
-    "require-dev": {
-        "phpmd/phpmd": "^2.15",
-        "phploc/phploc": "^7.0"
+  "name": "admin/csdl-school-management",
+  "autoload": {
+    "psr-4": {
+      "Admin\\CsdlSchoolManagement\\": "src/"
     }
+  },
+  "require-dev": {
+    "phpmd/phpmd": "^2.15",
+    "phploc/phploc": "^7.0",
+    "phpstan/phpstan": "^2.1",
+    "phpmetrics/phpmetrics": "^2.9",
+    "pdepend/pdepend": "^2.16"
+  }
 }
