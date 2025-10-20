@@ -1,4 +1,9 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+?>
+<?php
 ob_start();
 session_start();
 
@@ -6,22 +11,46 @@ session_start();
 if (!isset($_SESSION['user_name'])) {
     // Redirect user to login page
     header('Location: login.php');
+    exit; // dừng kịch bản sau redirect
+}
+$page = $_GET['page'] ?? 'dashboard';
+$action = $_GET['action'] ?? 'list';
+
+if ($page === 'student') {
+    require_once __DIR__ . '/controllers/StudentController.php';
+    $ctrl = new StudentController();
+    if ($action === 'list') $ctrl->list();
+    elseif ($action === 'create' || $action === 'add') $ctrl->create();
+    elseif ($action === 'edit') $ctrl->edit();
+    elseif ($action === 'delete') $ctrl->delete();
+    exit; // dừng để controller render
 }
 
-require_once('inc/top.php');
-require_once('inc/db.php');
-?>
 
+require_once('presentation/partials/top.php');
+require_once('inc/db.php');
+
+// thêm service
+require_once __DIR__ . '/services/DashboardService.php';
+$dashboardService = new DashboardService();
+
+// Lấy dữ liệu từ service (thay vì query trực tiếp trong view)
+$studentsPerClass = $dashboardService->getStudentsPerClass(10);
+$feesSummary = $dashboardService->getTotalFees();
+$totalExpenses = $dashboardService->getTotalExpenses();
+$recentExpenses = $dashboardService->getRecentExpenses(10);
+// ...existing code...
+?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-md-12 mt-2">
-            <?php include('inc/navbar.php'); ?>
+            <?php include('presentation/partials/navbar.php'); ?>
         </div>
     </div>
 
     <div class="row mt-1">
         <div class="col-md-3">
-            <?php include('inc/sidebar.php'); ?>
+            <?php include('presentation/partials/sidebar.php'); ?>
         </div>
         <div class="col-md-9">
             <div class="row">
@@ -41,65 +70,36 @@ require_once('inc/db.php');
                         <div class="card-body">
                             <table class="table table-bordered table-condensed">
                                 <tbody>
-
-                                    <?php 
-                                        for($i = 1;$i <=  10; $i++) {
-                                            $student = "SELECT * FROM student WHERE class = '$i'";
-                                            $student_run = mysqli_query($con , $student);
-                                            $row_student = mysqli_num_rows($student_run);
-                                        
-                                    ?>
+                                    <?php foreach ($studentsPerClass as $class => $count): ?>
                                     <tr>
-                                        <th class="bg-dark text-white">Lớp <?php echo   $i;?></th>
-                                        <th><?php echo   $row_student;?></th>
+                                        <th class="bg-dark text-white">Lớp <?php echo $class; ?></th>
+                                        <th><?php echo $count; ?></th>
                                     </tr>
-                                    <?php 
-                                        }
-                                    ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
                     </div>
                 </div>
+
                 <div class="col-md-4">
                     <div class="card text-primary border-warning">
                         <div class="card-header bg-warning text-white">Tổng phí thu được</div>
                         <div class="card-body">
                             <table class="table table-bordered table-condensed">
                                 <tbody>
-                                    <?php
-                                        $studentTotalFee = "SELECT * FROM student";
-                                        $runstudentTotalFee = mysqli_query($con,$studentTotalFee);
-                                        $studentTotalFee = 0;
-                                        $Totalfeesa = 0;
-
-                                        while($rowstudentTotalFee = mysqli_fetch_array($runstudentTotalFee)) {
-                                            $studnetTotalFee = $rowstudentTotalFee['fee'];
-                                            $Totalfeesa += $studnetTotalFee;
-                                        }
-
-                                        $feea = "SELECT * FROM fee";
-                                        $fee_run= mysqli_query($con,$feea);
-                                        $fees=0;
-                                        $feesa=0;
-                                        while($row_fee = mysqli_fetch_array($fee_run)) {
-                                            $fees= $row_fee['fees'];
-                                            $feesa += $fees;
-                                        }
-                                    ?>
                                     <tr>
-                                        <th class="bg-dark text-white">Tổng học phi</th>
-                                        <th><?php echo  $Totalfeesa;?></th>
+                                        <th class="bg-dark text-white">Tổng học phí</th>
+                                        <th><?php echo $feesSummary['total_expected']; ?></th>
                                     </tr>
                                     <tr>
                                         <th class="bg-dark text-white">Học phí thu được</th>
-                                        <th><?php echo  $feesa;?></th>
+                                        <th><?php echo $feesSummary['total_paid']; ?></th>
                                     </tr>
                                     <tr>
                                         <th class="bg-danger text-white">Học phí còn lại</th>
-                                        <th><?php echo  $Totalfeesa - $feesa;?></th>
+                                        <th><?php echo $feesSummary['total_expected'] - $feesSummary['total_paid']; ?></th>
                                     </tr>
-
                                 </tbody>
                             </table>
                         </div>
@@ -110,31 +110,18 @@ require_once('inc/db.php');
                         <div class="card-body">
                             <table class="table table-bordered table-condensed">
                                 <tbody>
-                                    <?php 
-                                        $expenses = "SELECT * FROM expenses";
-                                        $runexpenses = mysqli_query($con,$expenses);
-                                        $expAmt = 0;
-                                        $Totalexp = 0;
-
-                                        while($rowexpenses = mysqli_fetch_array($runexpenses)) {
-                                            $expAmt = $rowexpenses['amt'];
-                                            $Totalexp += $expAmt;
-                                        }
-
-                                    ?>
                                     <tr>
                                         <th class="bg-dark text-white">Học phí thu được</th>
-                                        <th><?php echo  $feesa;?></th>
+                                        <th><?php echo $feesSummary['total_paid']; ?></th>
                                     </tr>
                                     <tr>
                                         <th class="bg-dark text-white">Tổng chi phí phát sinh</th>
-                                        <th><?php echo  $Totalexp;?></th>
+                                        <th><?php echo $totalExpenses; ?></th>
                                     </tr>
                                     <tr>
                                         <th class="bg-danger text-white">Số dư còn lại</th>
-                                        <th><?php echo  $feesa-$Totalexp;?></th>
+                                        <th><?php echo $feesSummary['total_paid'] - $totalExpenses; ?></th>
                                     </tr>
-
                                 </tbody>
                             </table>
                         </div>
@@ -156,27 +143,14 @@ require_once('inc/db.php');
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <?php
-                                        $expenses = "SELECT * FROM expenses ORDER BY id DESC LIMIT 10";
-                                        $runexpenses = mysqli_query($con,$expenses);
-                                        $ia =0;
-
-                                        while($rowexpenses = mysqli_fetch_array($runexpenses)) {
-                                            $expAmt = $rowexpenses['amt'];
-                                            $particular = $rowexpenses['particular'];
-                                            $date = $rowexpenses['date'];
-
-                                            $ia += $ia + 1;
-                                        
-                                    ?>
+                                    <?php $ia = 0; foreach ($recentExpenses as $rowexpenses): $ia++; ?>
                                     <tr>
-                                        <th><?php echo  $ia;?></th>
-                                        <th><?php echo  $date;?></th>
-                                        <th><?php echo  $expAmt;?></th>
-                                        <th><?php echo  $particular;?></th>
+                                        <th><?php echo $ia; ?></th>
+                                        <th><?php echo htmlspecialchars($rowexpenses['date']); ?></th>
+                                        <th><?php echo htmlspecialchars($rowexpenses['amt']); ?></th>
+                                        <th><?php echo htmlspecialchars($rowexpenses['particular']); ?></th>
                                     </tr>
-                                    
-                                    <?php } ?>
+                                    <?php endforeach; ?>
                                 </tbody>
                             </table>
                         </div>
@@ -189,7 +163,9 @@ require_once('inc/db.php');
 
     <div class="container-fluid">
         <div class="row bg-dark mt-2 p-3">
-            <?php include('inc/footer.php'); ?>
+            <?php
+            include __DIR__ . '/presentation/partials/footer.php';
+            ?>
         </div>
     </div>
 </div>
