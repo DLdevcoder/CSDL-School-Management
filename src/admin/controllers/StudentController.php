@@ -1,87 +1,90 @@
 <?php
 require_once __DIR__ . '/../services/StudentService.php';
 require_once __DIR__ . '/../inc/auth.php';
+require_once __DIR__ . '/../inc/base.php';
+class StudentController
+{
+    protected StudentService $service;
 
-class StudentController {
-    protected $service;
-
-    public function __construct() {
+    public function __construct()
+    {
         $this->service = new StudentService();
     }
 
-    public function list() {
+    public function list()
+    {
         requireAdmin();
-
-        // Gọi layout đầu trang (chứa BASE_URL, Bootstrap, ... )
-        require_once __DIR__ . '/../presentation/partials/top.php';
-
-        // Lấy dữ liệu sinh viên
         $students = $this->service->getAllStudents();
 
-        // --- Bắt đầu bố cục trang ---
-        include __DIR__ . '/../presentation/partials/navbar.php';
-        echo '<div class="container-fluid">';
-        echo '<div class="row mt-1">';
-        echo '<div class="col-md-3">';
-        include __DIR__ . '/../presentation/partials/sidebar.php';
-        echo '</div>'; // end sidebar
-
-        echo '<div class="col-md-9">';
+        // Render view vào biến $content
+        ob_start();
         include __DIR__ . '/../presentation/student/list.php';
-        echo '</div>'; // end content
-        echo '</div>'; // end row
-        echo '</div>'; // end container
+        $content = ob_get_clean();
 
-        include __DIR__ . '/../presentation/partials/footer.php';
-        // --- Kết thúc bố cục trang ---
+        // Include layout chính, layout này sẽ hiển thị $content
+        include __DIR__ . '/../presentation/partials/layout.php';
     }
 
-    public function create() {
+    public function create()
+    {
         requireAdmin();
-
-        require_once __DIR__ . '/../presentation/partials/top.php';
-
+        $error = null;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->service->createStudent($_POST);
+            $res = $this->service->createStudent($_POST, $_FILES);
+            if ($res === true) {
+                header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+                exit;
+            } else {
+                $error = $res;
+            }
+        }
+
+        $options = $this->service->getFormOptions();
+
+        // Render view vào biến $content
+        ob_start();
+        include __DIR__ . '/../presentation/student/create.php'; // View này cần $options, $error
+        $content = ob_get_clean();
+
+        // Include layout chính
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
+
+    public function edit()
+    {
+        requireAdmin();
+        $id = $_GET['id'] ?? null;
+        if (!$id) {
             header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
             exit;
         }
 
-        include __DIR__ . '/../presentation/partials/navbar.php';
-        echo '<div class="container-fluid"><div class="row mt-1">';
-        echo '<div class="col-md-3">';
-        include __DIR__ . '/../presentation/partials/sidebar.php';
-        echo '</div><div class="col-md-9">';
-        include __DIR__ . '/../presentation/student/create.php';
-        echo '</div></div></div>';
-        include __DIR__ . '/../presentation/partials/footer.php';
-    }
-
-    public function edit() {
-        requireAdmin();
-
-        require_once __DIR__ . '/../presentation/partials/top.php';
-        $id = $_GET['id'] ?? null;
-
+        $error = null;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $this->service->updateStudent($_POST);
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-            exit;
+            // Giả sử service->updateStudent cũng trả về true hoặc chuỗi lỗi
+            $res = $this->service->updateStudent($_POST, $_FILES);
+            if ($res === true) {
+                header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+                exit;
+            } else {
+                $error = $res;
+            }
         }
 
         $student = $this->service->getStudentById($id);
+        $options = $this->service->getFormOptions();
 
-        include __DIR__ . '/../presentation/partials/navbar.php';
-        echo '<div class="container-fluid"><div class="row mt-1">';
-        echo '<div class="col-md-3">';
-        include __DIR__ . '/../presentation/partials/sidebar.php';
-        echo '</div><div class="col-md-9">';
-        include __DIR__ . '/../presentation/student/edit.php';
-        echo '</div></div></div>';
-        include __DIR__ . '/../presentation/partials/footer.php';
+        // Render view vào biến $content
+        ob_start();
+        include __DIR__ . '/../presentation/student/edit.php'; // View này cần $student, $options, $error
+        $content = ob_get_clean();
+
+        // Include layout chính
+        include __DIR__ . '/../presentation/partials/layout.php';
     }
 
-    public function delete() {
+    public function delete()
+    {
         requireAdmin();
         $id = $_GET['id'] ?? null;
         if ($id) {

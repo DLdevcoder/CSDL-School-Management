@@ -1,6 +1,3 @@
-<?php
-// assumes $students provided by controller and top.php already included
-?>
 <div class="container mt-3">
   <div class="d-flex justify-content-between mb-2">
     <h3>Danh sách học sinh</h3>

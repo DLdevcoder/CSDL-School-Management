@@ -1,7 +1,6 @@
 <?php
 if (!defined('BASE_URL')) {
-    // fallback: estimate from SCRIPT_NAME (works if site lives in /CSDL-School-Management/...)
-    $script = str_replace('\\','/', $_SERVER['SCRIPT_NAME']); // e.g. /CSDL-School-Management/src/admin/index.php
+        $script = str_replace('\\','/', $_SERVER['SCRIPT_NAME']);
     $parts = explode('/src/', $script, 2);
     $base = isset($parts[0]) ? rtrim($parts[0], '/') : '';
     if ($base === '') $base = ''; // fallback to root
@@ -19,7 +18,6 @@ $counts = $statsRepo->getAllCounts();
     </a>
 
     <?php
-    // Định nghĩa page (route) riêng biệt với table name (counts)
     $menuItems = [
         ['page'=>'gallery',      'table'=>'gallery',      'icon'=>'fa-camera',      'label'=>'Thư viện ảnh'],
         ['page'=>'student',      'table'=>'student',      'icon'=>'fa-user',        'label'=>'Học sinh'],
