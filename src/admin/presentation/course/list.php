@@ -1,6 +1,6 @@
 <h2 class="text-center text-white bg-primary">Hiển thị khóa học</h2>
 <div class="mb-2 text-right">
-    <a href="<?php echo BASE_URL; ?>/src/admin/index.php?page=course&action=create" class="btn btn-outline-primary">Thêm khóa học</a>
+    <a href="<?php echo BASE_URL; ?>/src/admin/index.php?page=courses&action=create" class="btn btn-outline-primary">Thêm khóa học</a>
 </div>
 
 <table class="table table-border" id="table2excel">

@@ -45,6 +45,3 @@ $counts = $statsRepo->getAllCounts();
         </a>
     <?php endforeach; ?>
 </div>
-<?php
-// ...existing code...
-?>

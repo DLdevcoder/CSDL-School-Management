@@ -34,5 +34,29 @@ class CourseRepository {
         mysqli_stmt_close($stmt);
         return (int)($row['c'] ?? 0);
     }
+
+    public function insert(array $data): bool {
+        global $con;
+        $sql = "INSERT INTO courses (course_name, course_duration, course_fee, course_start, class) VALUES (?, ?, ?, ?, ?)";
+        
+        $stmt = mysqli_prepare($con, $sql);
+        if (!$stmt) {
+            error_log('Prepare insert course failed: ' . mysqli_error($con));
+            return false;
+        }
+        mysqli_stmt_bind_param(
+            $stmt, 
+            'ssssi',
+            $data['course_name'],
+            $data['duration'],
+            $data['fee'],
+            $data['date'],
+            $data['class']
+        );
+
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return (bool)$ok;
+    }
 }
 ?>

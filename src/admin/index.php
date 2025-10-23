@@ -23,13 +23,23 @@ if ($page === 'student') {
     elseif ($action === 'create' || $action === 'add') $ctrl->create();
     elseif ($action === 'edit') $ctrl->edit();
     elseif ($action === 'delete') $ctrl->delete();
-    exit; // dừng để controller render
+    exit;
 }
 
 if ($page === 'courses') {
     require_once __DIR__ . '/controllers/CourseController.php';
     $ctrl = new CourseController();
-    if ($action === 'list') $ctrl->list();
+    switch ($action) {
+        case 'create':
+            $ctrl->create();
+            break;
+        case 'edit':
+            break;
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
     exit;
 }
 
