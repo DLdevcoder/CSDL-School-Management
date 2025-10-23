@@ -1,100 +1,39 @@
 <?php
-ob_start();
-session_start();
-
-if (!isset($_SESSION['user_name'])) {
-    header('Location: login.php');
-    exit;
-}
-
-require_once __DIR__ . '/../inc/top.php';
+require_once __DIR__ . '/../inc/auth.php';   
+require_once __DIR__ . '/../inc/base.php'; 
 require_once __DIR__ . '/../services/CourseService.php';
 
-// Service layer
-$service = new CourseService();
+class CourseController {
+    protected CourseService $service;
 
-// Biến dùng chung
-$error = null;
-$success = null;
-$action = $_GET['action'] ?? 'list';
+    public function __construct() {
+        $this->service = new CourseService();
+    }
 
-switch ($action) {
-
-    case 'add':
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $ok = $service->createCourse($_POST);
-            if ($ok === true) {
-                header('Location: course.php?action=list');
-                exit;
-            } else {
-                $error = $ok ?: 'Không thể thêm khóa học.';
+    public function list() {
+        requireAdmin();
+        if (isset($_GET['del'])) {
+            $id = (int)$_GET['del'];
+            if ($id > 0) {
+                $ok = $this->service->deleteCourse($id);
+                if ($ok) {
+                    header('Location: ' . BASE_URL . '/src/admin/index.php?page=course&action=list');
+                    exit;
+                } else {
+                    $error = 'Không thể xóa khóa học.';
+                }
             }
         }
-        $view = __DIR__ . '/../presentation/course/create.php';
-        break;
 
-    case 'delete':
-        $id = (int)($_GET['id'] ?? 0);
-        if ($id > 0) {
-            $ok = $service->deleteCourse($id);
-            if ($ok) {
-                header('Location: course.php?action=list');
-                exit;
-            } else {
-                $error = 'Không thể xóa khóa học.';
-            }
-        }
-        $courses = $service->getAllCourses();
-        $view = __DIR__ . '/../presentation/course/list.php';
-        break;
-
-    case 'edit':
-        // Sau này sẽ thêm form chỉnh sửa
-        $error = 'Chức năng chỉnh sửa đang được phát triển.';
-        $courses = $service->getAllCourses();
-        $view = __DIR__ . '/../presentation/course/list.php';
-        break;
-
-    case 'list':
-    default:
-        $courses = $service->getAllCourses();
-        $view = __DIR__ . '/../presentation/course/list.php';
-        break;
+        $courses = $this->service->getAllCourses();
+        ob_start();
+        include __DIR__ . '/../presentation/course/list.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }
-
+if (php_sapi_name() !== 'cli' && basename($_SERVER['SCRIPT_NAME']) === basename(__FILE__)) {
+    $ctrl = new CourseController();
+    $ctrl->list();
+}
 ?>
-<div class="container-fluid">
-    <div class="row mt-2">
-        <div class="col-md-12">
-            <?php include __DIR__ . '/../presentation/partials/navbar.php'; ?>
-        </div>
-    </div>
-
-    <div class="row mt-1">
-        <div class="col-md-3">
-            <?php include __DIR__ . '/../presentation/partials/sidebar.php'; ?>
-        </div>
-        <div class="col-md-9">
-            <div class="col-md-12 mb-2">
-                <img src="<?php echo BASE_URL; ?>/images/logo.jpg" alt="logo" class="img-fluid"><hr>
-            </div>
-
-            <?php if ($error): ?>
-                <div class="alert alert-danger"><?php echo htmlspecialchars($error); ?></div>
-            <?php elseif ($success): ?>
-                <div class="alert alert-success"><?php echo htmlspecialchars($success); ?></div>
-            <?php endif; ?>
-
-            <?php include $view; ?>
-        </div>
-    </div>
-
-    <div class="container-fluid">
-        <div class="row bg-dark mt-2 p-3">
-            <?php include __DIR__ . '/../presentation/partials/footer.php'; ?>
-        </div>
-    </div>
-</div>
-
-</body>
-</html>

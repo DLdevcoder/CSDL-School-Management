@@ -26,6 +26,13 @@ if ($page === 'student') {
     exit; // dừng để controller render
 }
 
+if ($page === 'courses') {
+    require_once __DIR__ . '/controllers/CourseController.php';
+    $ctrl = new CourseController();
+    if ($action === 'list') $ctrl->list();
+    exit;
+}
+
 
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
@@ -55,7 +62,7 @@ $recentExpenses = $dashboardService->getRecentExpenses(10);
         <div class="col-md-9">
             <div class="row">
                 <div class="col-md-12">
-                    <img src="images/logo.jpg" alt="logo" class="img-fluid"><hr>
+                    <img src="../images/logo.png" width="50" alt="logo" class="img-fluid"><hr>
                 </div>
             </div>
 

@@ -65,7 +65,6 @@ class StudentController
                 exit;
             } else {
                 $error = $res;
-                // refresh student data to show current DB values (except posted)
                 $student = $this->service->getStudentById($id);
             }
         }

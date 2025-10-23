@@ -1,6 +1,6 @@
 <h2 class="text-center text-white bg-primary">Hiển thị khóa học</h2>
 <div class="mb-2 text-right">
-    <a href="<?php echo BASE_URL; ?>/src/admin/addCourse.php" class="btn btn-outline-primary">Thêm khóa học</a>
+    <a href="<?php echo BASE_URL; ?>/src/admin/index.php?page=course&action=create" class="btn btn-outline-primary">Thêm khóa học</a>
 </div>
 
 <table class="table table-border" id="table2excel">
@@ -29,13 +29,13 @@
             <td><?php echo (int)$course['student_count']; ?></td>
             <td><?php echo htmlspecialchars($course['course_start']); ?></td>
             <td>
-                <a class="btn btn-primary" href="<?php echo BASE_URL; ?>/src/admin/viewCourse.php?id=<?php echo (int)$course['course_id']; ?>"><i class="fa fa-eye"></i></a>
+                <a class="btn btn-primary" href="<?php echo BASE_URL; ?>/src/admin/index.php?page=course&action=view&id=<?php echo (int)$course['course_id']; ?>"><i class="fa fa-eye"></i></a>
             </td>
             <td>
-                <a class="btn btn-warning" href="<?php echo BASE_URL; ?>/src/admin/editCourse.php?id=<?php echo (int)$course['course_id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
+                <a class="btn btn-warning" href="<?php echo BASE_URL; ?>/src/admin/index.php?page=course&action=edit&id=<?php echo (int)$course['course_id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
             </td>
             <td>
-                <a class="btn btn-danger" href="<?php echo BASE_URL; ?>/src/admin/course.php?del=<?php echo (int)$course['course_id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa?')"><i class="fa fa-trash-o"></i></a>
+                <a class="btn btn-danger" href="<?php echo BASE_URL; ?>/src/admin/index.php?page=course&action=list&del=<?php echo (int)$course['course_id']; ?>" onclick="return confirm('Bạn có chắc muốn xóa?')"><i class="fa fa-trash-o"></i></a>
             </td>
         </tr>
         <?php endforeach; ?>
@@ -45,15 +45,14 @@
 <button class="btn btn-danger offset-md-4" id="btn" type="button">Xuất ra Excel</button>
 
 <script>
-    // DataTable init (id fixed)
-    $(document).ready(function(){
-        $('#table2excel').DataTable();
-    });
+$(document).ready(function(){
+    $('#table2excel').DataTable();
+});
 
-    $("#btn").click(function(){
-        $("#table2excel").table2excel({
-            name:"Worksheet name",
-            filename: "courses.xls"
-        });
+$("#btn").click(function(){
+    $("#table2excel").table2excel({
+        name:"Worksheet name",
+        filename: "courses.xls"
     });
+});
 </script>
