@@ -15,13 +15,9 @@ class StudentController
     {
         requireAdmin();
         $students = $this->service->getAllStudents();
-
-        // Render view vào biến $content
         ob_start();
         include __DIR__ . '/../presentation/student/list.php';
         $content = ob_get_clean();
-
-        // Include layout chính, layout này sẽ hiển thị $content
         include __DIR__ . '/../presentation/partials/layout.php';
     }
 
@@ -40,46 +36,45 @@ class StudentController
         }
 
         $options = $this->service->getFormOptions();
-
-        // Render view vào biến $content
         ob_start();
-        include __DIR__ . '/../presentation/student/create.php'; // View này cần $options, $error
+        include __DIR__ . '/../presentation/student/create.php'; 
         $content = ob_get_clean();
-
-        // Include layout chính
         include __DIR__ . '/../presentation/partials/layout.php';
     }
 
-    public function edit()
-    {
+    public function edit() {
         requireAdmin();
-        $id = $_GET['id'] ?? null;
-        if (!$id) {
+
+        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+        if ($id <= 0) {
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+            exit;
+        }
+
+        $student = $this->service->getStudentById($id);
+        if (!$student) {
             header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
             exit;
         }
 
         $error = null;
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Giả sử service->updateStudent cũng trả về true hoặc chuỗi lỗi
-            $res = $this->service->updateStudent($_POST, $_FILES);
+            $res = $this->service->updateStudent($id, $_POST, $_FILES);
             if ($res === true) {
                 header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
                 exit;
             } else {
                 $error = $res;
+                // refresh student data to show current DB values (except posted)
+                $student = $this->service->getStudentById($id);
             }
         }
 
-        $student = $this->service->getStudentById($id);
         $options = $this->service->getFormOptions();
 
-        // Render view vào biến $content
         ob_start();
-        include __DIR__ . '/../presentation/student/edit.php'; // View này cần $student, $options, $error
+        include __DIR__ . '/../presentation/student/edit.php'; 
         $content = ob_get_clean();
-
-        // Include layout chính
         include __DIR__ . '/../presentation/partials/layout.php';
     }
 

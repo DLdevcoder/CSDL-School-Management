@@ -15,10 +15,6 @@ class StudentService {
         return $this->repo->findById($id);
     }
 
-    /**
-     * Trả về dữ liệu cần cho form (courses, subjects, competitive)
-     * [Hàm này được thêm từ file mẫu]
-     */
     public function getFormOptions(): array {
         return [
             'courses' => $this->repo->getCourses(),
@@ -27,11 +23,6 @@ class StudentService {
         ];
     }
 
-    /**
-     * Tạo học sinh mới. Trả về true khi OK, chuỗi lỗi khi fail.
-     * $post: $_POST, $files: $_FILES
-     * [Logic của hàm này được thay thế hoàn toàn từ file mẫu]
-     */
     public function createStudent(array $post, array $files) {
         // basic validation
         $name = trim($post['studentName'] ?? '');
@@ -47,7 +38,6 @@ class StudentService {
         if (!is_numeric($fee)) return 'Học phí phải là số.';
         $password = trim($post['password'] ?? '');
 
-        // subjects / competitives may come as arrays
         $subject = '';
         if (!empty($post['sub']) && is_array($post['sub'])) {
             $subject = implode(',', array_map('trim', $post['sub']));
@@ -57,7 +47,6 @@ class StudentService {
             $cexam = implode(',', array_map('trim', $post['com']));
         }
 
-        // image handling
         $imageName = null;
         if (!empty($files['u_image'])) {
             $saved = $this->repo->saveImage($files['u_image']);
@@ -92,15 +81,68 @@ class StudentService {
         return true;
     }
 
-    // [Hàm này được giữ nguyên từ file gốc của bạn]
-    public function updateStudent(array $data) {
-        $id = (int)($data['id'] ?? 0);
-        $name = trim($data['name'] ?? '');
-        if ($id <= 0 || $name === '') return false;
-        return $this->repo->update($id, ['name' => $name]);
+    public function updateStudent(int $id, array $post, array $files) {
+        $name = trim($post['studentName'] ?? '');
+        if ($name === '') return 'Tên học sinh không được để trống.';
+        $class = (int)($post['class'] ?? 0);
+        if ($class <= 0) return 'Lớp không hợp lệ.';
+        $batch = (int)($post['batch'] ?? 0);
+        $mobile = trim($post['mobile'] ?? '');
+        if ($mobile === '') return 'Số điện thoại không được để trống.';
+        $email = trim($post['email'] ?? '');
+        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return 'Email không hợp lệ.';
+        $fee = $post['fee'] ?? '0';
+        if (!is_numeric($fee)) return 'Học phí phải là số.';
+
+        $subject = '';
+        if (!empty($post['sub']) && is_array($post['sub'])) {
+            $subject = implode(',', array_map('trim', $post['sub']));
+        }
+        $cexam = '';
+        if (!empty($post['com']) && is_array($post['com'])) {
+            $cexam = implode(',', array_map('trim', $post['com']));
+        }
+
+        $existing = $this->repo->findById($id);
+        if (!$existing) return 'Học sinh không tồn tại.';
+
+        $imageName = $existing['image'] ?? '';
+        if (!empty($files['u_image']) && !empty($files['u_image']['tmp_name'])) {
+            $saved = $this->repo->saveImage($files['u_image']);
+            if ($saved === false) return 'Không thể lưu ảnh upload.';
+            $imageName = $saved;
+        }
+
+        $password = trim($post['password'] ?? '');
+        if ($password === '') {
+            $password = $existing['password'] ?? '';
+        } else {
+            $password = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        $data = [
+            'name' => $name,
+            'address' => trim($post['address'] ?? ''),
+            'class' => $class,
+            'batch' => $batch,
+            'medium' => trim($post['medium'] ?? ''),
+            'gender' => trim($post['gender'] ?? ''),
+            'mobile' => $mobile,
+            'email' => $email,
+            'school' => trim($post['school'] ?? ''),
+            'fee' => (string)$fee,
+            'password' => $password,
+            'subject' => $subject,
+            'cexam' => $cexam,
+            'dob' => $post['date'] ?? null,
+            'image' => $imageName,
+        ];
+
+        $ok = $this->repo->update($id, $data);
+        if (!$ok) return 'Lỗi khi cập nhật cơ sở dữ liệu.';
+        return true;
     }
 
-    // [Hàm này được giữ nguyên từ file gốc của bạn]
     public function deleteStudent($id) {
         return $this->repo->delete((int)$id);
     }
