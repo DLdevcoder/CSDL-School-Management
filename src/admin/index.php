@@ -44,6 +44,19 @@ if ($page === 'course') {
     exit;
 }
 
+if ($page === 'gallery') {
+    require_once __DIR__ . '/controllers/GalleryController.php';
+    $ctrl = new GalleryController();
+
+    switch ($action) {
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
+    exit;
+}
+
 
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
