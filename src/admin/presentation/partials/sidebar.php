@@ -22,7 +22,7 @@ $counts = $statsRepo->getAllCounts();
         ['page'=>'gallery',      'table'=>'gallery',      'icon'=>'fa-camera',      'label'=>'Thư viện ảnh'],
         ['page'=>'student',      'table'=>'student',      'icon'=>'fa-user',        'label'=>'Học sinh'],
         ['page'=>'review',       'table'=>'review',       'icon'=>'fa-star',        'label'=>'Nhận xét'],
-        ['page'=>'courses',      'table'=>'courses',      'icon'=>'fa-book',        'label'=>'Khóa học'],
+        ['page'=>'course',      'table'=>'courses',      'icon'=>'fa-book',        'label'=>'Khóa học'],
         ['page'=>'register',     'table'=>'register',     'icon'=>'fa-lightbulb-o', 'label'=>'Đăng ký'],
         ['page'=>'fee',          'table'=>'fee',          'icon'=>'fa-money',       'label'=>'Học phí'],
         ['page'=>'category',     'table'=>'category',     'icon'=>'fa-sort',        'label'=>'Danh mục'],

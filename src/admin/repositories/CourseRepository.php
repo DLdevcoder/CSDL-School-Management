@@ -58,5 +58,50 @@ class CourseRepository {
         mysqli_stmt_close($stmt);
         return (bool)$ok;
     }
+
+    public function findById(int $id): ?array {
+        global $con;
+        $stmt = mysqli_prepare($con, "SELECT * FROM courses WHERE course_id = ? LIMIT 1");
+        if (!$stmt) {
+            return null;
+        }
+        mysqli_stmt_bind_param($stmt, 'i', $id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $course = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $course ?: null;
+    }
+
+    public function update(int $id, array $data): bool {
+        global $con;
+        $sql = "UPDATE courses SET 
+                    course_name = ?,
+                    course_duration = ?,
+                    course_fee = ?,
+                    course_start = ?,
+                    class = ?
+                WHERE course_id = ?";
+        
+        $stmt = mysqli_prepare($con, $sql);
+        if (!$stmt) {
+            error_log('Prepare update course failed: ' . mysqli_error($con));
+            return false;
+        }
+        mysqli_stmt_bind_param(
+            $stmt,
+            'ssssii',
+            $data['course_name'],
+            $data['duration'],
+            $data['fee'],
+            $data['date'],
+            $data['class'],
+            $id
+        );
+
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return (bool)$ok;
+    }
 }
 ?>

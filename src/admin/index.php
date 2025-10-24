@@ -26,7 +26,7 @@ if ($page === 'student') {
     exit;
 }
 
-if ($page === 'courses') {
+if ($page === 'course') {
     require_once __DIR__ . '/controllers/CourseController.php';
     $ctrl = new CourseController();
     switch ($action) {
@@ -34,6 +34,7 @@ if ($page === 'courses') {
             $ctrl->create();
             break;
         case 'edit':
+            $ctrl->edit();
             break;
         case 'list':
         default:

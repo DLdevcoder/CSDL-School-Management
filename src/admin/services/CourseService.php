@@ -42,5 +42,35 @@ class CourseService {
         
         return $ok ? true : 'Đã xảy ra lỗi khi thêm vào cơ sở dữ liệu.';
     }
+
+    public function getCourseById(int $id): ?array {
+        if ($id <= 0) return null;
+        return $this->repo->findById($id);
+    }
+
+    public function updateCourse(int $id, array $post) {
+        $courseName = trim($post['courseName'] ?? '');
+        if ($courseName === '') {
+            return 'Tên khóa học không được để trống.';
+        }
+        $fee = trim($post['fee'] ?? '');
+        if (!is_numeric($fee) || $fee < 0) {
+            return 'Học phí không hợp lệ.';
+        }
+        if ($id <= 0) {
+            return 'ID khóa học không hợp lệ.';
+        }
+        $data = [
+            'course_name' => $courseName,
+            'class' => (int)($post['class'] ?? 0),
+            'duration' => trim($post['duration'] ?? ''),
+            'fee' => $fee,
+            'date' => $post['date'] ?? null,
+        ];
+
+        $ok = $this->repo->update($id, $data);
+        
+        return $ok ? true : 'Đã xảy ra lỗi khi cập nhật cơ sở dữ liệu.';
+    }
 }
 ?>

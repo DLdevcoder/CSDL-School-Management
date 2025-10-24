@@ -50,6 +50,39 @@ class CourseController {
         $content = ob_get_clean();
         include __DIR__ . '/../presentation/partials/layout.php';
     }
+
+    public function edit() {
+        requireAdmin();
+        $error = null;
+        $id = (int)($_GET['id'] ?? 0);
+        
+        if ($id <= 0) {
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=course&action=list');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $result = $this->service->updateCourse($id, $_POST);
+            if ($result === true) {
+                $_SESSION['flash_message'] = 'Cập nhật khóa học thành công!';
+                header('Location: ' . BASE_URL . '/src/admin/index.php?page=course&action=list');
+                exit;
+            } else {
+                $error = $result;
+            }
+        }
+
+        $course = $this->service->getCourseById($id);
+        if (!$course) {
+            $_SESSION['flash_message'] = 'Lỗi: Không tìm thấy khóa học!';
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=course&action=list');
+            exit;
+        }
+        ob_start();
+        include __DIR__ . '/../presentation/course/edit.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }
 if (php_sapi_name() !== 'cli' && basename($_SERVER['SCRIPT_NAME']) === basename(__FILE__)) {
     $ctrl = new CourseController();
