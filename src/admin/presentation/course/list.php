@@ -1,9 +1,10 @@
 <h2 class="text-center text-white bg-primary">Hiển thị khóa học</h2>
+
 <div class="mb-2 text-right">
-    <a href="<?php echo BASE_URL; ?>/src/admin/index.php?page=courses&action=create" class="btn btn-outline-primary">Thêm khóa học</a>
+    <a href="<?php echo BASE_URL; ?>/src/admin/index.php?page=course&action=create" class="btn btn-outline-primary">Thêm khóa học</a>
 </div>
 
-<table class="table table-border" id="table2excel">
+<table class="table table-bordered" id="table2excel">
     <thead class="thead-dark">
         <tr>
             <th>STT</th>
@@ -42,17 +43,19 @@
     </tbody>
 </table>
 
-<button class="btn btn-danger offset-md-4" id="btn" type="button">Xuất ra Excel</button>
-
+<button id="btn" class="btn btn-danger offset-md-4">Xuất ra Excel</button>
 <script>
 $(document).ready(function(){
-    $('#table2excel').DataTable();
-});
-
-$("#btn").click(function(){
-    $("#table2excel").table2excel({
-        name:"Worksheet name",
-        filename: "courses.xls"
+    const table = $('#table2excel').DataTable();
+    $('#btn').click(function(){
+        table.destroy();
+        $("#table2excel").table2excel({
+            exclude: ".noExl", 
+            name: "Courses",
+            filename: "courses.xls", 
+            preserveColors: false
+        });
+        $('#table2excel').DataTable();
     });
 });
 </script>

@@ -36,6 +36,11 @@ if (!defined('BASE_URL')) {
     <script src="<?php echo BASE_URL; ?>/js/bootstrap.min.js"></script>
     <script src="<?php echo BASE_URL; ?>/plugins/datatable/datatables.min.js"></script>
     <script src="<?php echo BASE_URL; ?>/plugins/table2excel.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://cdn.jsdelivr.net/gh/rainabba/jquery-table2excel/dist/jquery.table2excel.min.js"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" 
         integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
   </head>
