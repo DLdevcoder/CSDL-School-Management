@@ -63,10 +63,22 @@ if ($page === 'gallery') {
     exit;
 }
 
+if ($page === 'attendance') {
+    require_once __DIR__ . '/controllers/AttendanceController.php';
+    $ctrl = new AttendanceController();
+
+    switch ($action) {
+        case 'take':
+        default:
+            $ctrl->take();
+            break;
+    }
+    exit;
+}
+
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
 
-// thêm service
 require_once __DIR__ . '/services/DashboardService.php';
 $dashboardService = new DashboardService();
 
