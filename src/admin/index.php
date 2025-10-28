@@ -76,6 +76,19 @@ if ($page === 'attendance') {
     exit;
 }
 
+if ($page === 'exam') {
+    require_once __DIR__ . '/controllers/ExamController.php';
+    $ctrl = new ExamController();
+
+    switch ($action) {
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
+    exit;
+}
+
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
 

@@ -10,10 +10,10 @@
         <a class="nav-link text-white" href="index.php"><i class="fa fa-home"></i> Trang chủ</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" href="addGallery.php"><i class="fa fa-camera"></i> Ảnh</a>
+        <a class="nav-link text-white" href="index.php?page=gallery&action=create"><i class="fa fa-camera"></i> Ảnh</a>
       </li>
       <li class="nav-item">
-        <a class="nav-link text-white" href="addStudent.php"><i class="fa fa-user"></i> Học sinh</a>
+        <a class="nav-link text-white" href="index.php?page=student&action=create"><i class="fa fa-user"></i> Học sinh</a>
       </li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" href="#" role="button" data-toggle="dropdown" aria-expanded="false">
@@ -21,7 +21,7 @@
         </a>
         <div class="dropdown-menu">
           <a class="dropdown-item" href="#">Danh mục</a>
-          <a class="dropdown-item" href="addCourse.php">Khóa học</a>
+          <a class="dropdown-item" href="index.php?page=course&action=create">Khóa học</a>
         </div>
       </li>
     </ul>
