@@ -32,4 +32,25 @@ class GalleryController {
         $content = ob_get_clean();
         include __DIR__ . '/../presentation/partials/layout.php';
     }
+
+    public function create() {
+        requireAdmin();
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $result = $this->service->createGalleryItem($_POST, $_FILES);
+            if ($result === true) {
+                $_SESSION['flash_message'] = "Thêm ảnh mới thành công!";
+                header('Location: ' . BASE_URL . '/src/admin/index.php?page=gallery&action=list');
+                exit;
+            } else {
+                $error = $result;
+            }
+        }
+
+        ob_start();
+        include __DIR__ . '/../presentation/gallery/create.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }

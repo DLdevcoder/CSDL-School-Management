@@ -1,6 +1,4 @@
 <?php
-// Layout chung: phải được include bởi controller sau khi $content đã được chuẩn bị.
-// Top sẽ định nghĩa BASE_URL và load CSS/JS
 require_once __DIR__ . '/top.php';
 ?>
 <div class="container-fluid">

@@ -49,6 +49,11 @@ if ($page === 'gallery') {
     $ctrl = new GalleryController();
 
     switch ($action) {
+        case 'create':
+            $ctrl->create();
+            break;
+        case 'edit':
+            break;
         case 'list':
         default:
             $ctrl->list();
@@ -56,7 +61,6 @@ if ($page === 'gallery') {
     }
     exit;
 }
-
 
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');

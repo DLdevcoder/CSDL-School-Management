@@ -29,4 +29,30 @@ class GalleryService {
 
         return true;
     }
+
+    public function createGalleryItem(array $post, array $files) {
+        $title = trim($post['imageTitle'] ?? '');
+        if ($title === '') {
+            return "Tiêu đề không được để trống.";
+        }
+        if (empty($files['u_image']['name'])) {
+            return "Bạn phải chọn một file ảnh.";
+        }
+        $imageName = $this->repo->saveImage($files['u_image']);
+        if ($imageName === false) {
+            return "Không thể lưu file ảnh. Vui lòng thử lại.";
+        }
+        $data = [
+            'title' => $title,
+            'image' => $imageName
+        ];
+
+        $ok = $this->repo->insert($data);
+        if (!$ok) {
+            $this->repo->deleteImageFile($imageName);
+            return "Lỗi khi lưu thông tin vào cơ sở dữ liệu.";
+        }
+
+        return true;
+    }
 }
