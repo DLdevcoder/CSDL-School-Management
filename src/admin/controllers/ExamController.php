@@ -30,4 +30,25 @@ class ExamController {
         $content = ob_get_clean();
         include __DIR__ . '/../presentation/partials/layout.php';
     }
+
+    public function create() {
+        requireAdmin();
+        $error = null;
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $result = $this->service->createExam($_POST);
+            if ($result === true) {
+                $_SESSION['flash_message'] = "Thêm kỳ thi mới thành công!";
+                header('Location: ' . BASE_URL . '/src/admin/index.php?page=exam&action=list');
+                exit;
+            } else {
+                $error = $result;
+            }
+        }
+        $formData = $this->service->getFormData();
+        ob_start();
+        include __DIR__ . '/../presentation/exam/create.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }

@@ -81,6 +81,9 @@ if ($page === 'exam') {
     $ctrl = new ExamController();
 
     switch ($action) {
+        case 'create':
+            $ctrl->create();
+            break;
         case 'list':
         default:
             $ctrl->list();
