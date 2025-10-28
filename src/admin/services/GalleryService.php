@@ -55,4 +55,37 @@ class GalleryService {
 
         return true;
     }
+
+    public function getGalleryItemById(int $id): ?array {
+        return $this->repo->findById($id);
+    }
+
+    public function updateGalleryItem(int $id, array $post, array $files) {
+        $title = trim($post['imageTitle'] ?? '');
+        if ($title === '') {
+            return "Tiêu đề không được để trống.";
+        }
+        $currentItem = $this->repo->findById($id);
+        if (!$currentItem) {
+            return "Không tìm thấy ảnh để cập nhật.";
+        }
+        $imageName = $currentItem['gallery_image'];
+
+        if (!empty($files['u_image']['tmp_name'])) {
+            $newImageName = $this->repo->saveImage($files['u_image']);
+            if ($newImageName) {
+                $this->repo->deleteImageFile($imageName);
+                $imageName = $newImageName; 
+            } else {
+                return "Lỗi khi upload ảnh mới.";
+            }
+        }
+        $data = [
+            'title' => $title,
+            'image' => $imageName
+        ];
+
+        $ok = $this->repo->update($id, $data);
+        return $ok ? true : "Lỗi khi cập nhật cơ sở dữ liệu.";
+    }
 }

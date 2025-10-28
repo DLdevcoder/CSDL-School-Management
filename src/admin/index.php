@@ -53,6 +53,7 @@ if ($page === 'gallery') {
             $ctrl->create();
             break;
         case 'edit':
+            $ctrl->edit();
             break;
         case 'list':
         default:

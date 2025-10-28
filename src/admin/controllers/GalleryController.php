@@ -53,4 +53,38 @@ class GalleryController {
         $content = ob_get_clean();
         include __DIR__ . '/../presentation/partials/layout.php';
     }
+
+    public function edit() {
+        requireAdmin();
+        $error = null;
+        $id = (int)($_GET['id'] ?? 0);
+        
+        if ($id <= 0) {
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=gallery&action=list');
+            exit;
+        }
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $result = $this->service->updateGalleryItem($id, $_POST, $_FILES);
+            if ($result === true) {
+                $_SESSION['flash_message'] = "Cập nhật ảnh thành công!";
+                header('Location: ' . BASE_URL . '/src/admin/index.php?page=gallery&action=list');
+                exit;
+            } else {
+                $error = $result;
+            }
+        }
+
+        $galleryItem = $this->service->getGalleryItemById($id);
+        if (!$galleryItem) {
+            $_SESSION['flash_message'] = "Lỗi: Không tìm thấy ảnh!";
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=gallery&action=list');
+            exit;
+        }
+        
+        ob_start();
+        include __DIR__ . '/../presentation/gallery/edit.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }

@@ -84,4 +84,24 @@ class GalleryRepository {
         
         return false;
     }
+
+    public function update(int $id, array $data): bool {
+        global $con;
+        $sql = "UPDATE gallery SET gallery_title = ?, gallery_image = ? WHERE gallery_id = ?";
+        
+        $stmt = mysqli_prepare($con, $sql);
+        if (!$stmt) return false;
+
+        mysqli_stmt_bind_param(
+            $stmt, 
+            'ssi',
+            $data['title'],
+            $data['image'],
+            $id
+        );
+
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return (bool)$ok;
+    }
 }
