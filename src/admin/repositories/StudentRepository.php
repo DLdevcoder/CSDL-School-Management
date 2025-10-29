@@ -53,13 +53,31 @@ class StudentRepository
         return (bool)$ok;
     }
 
-    public function findAll()
-    {
+    public function findAllWithCourse(): array {
         global $con;
-        $rows = [];
-        $res = mysqli_query($con, "SELECT * FROM student ORDER BY id DESC");
-        while ($r = mysqli_fetch_assoc($res)) $rows[] = $r;
-        return $rows;
+        $students = [];
+        $sql = "SELECT s.*, c.course_name 
+                FROM student s
+                LEFT JOIN courses c ON s.batch = c.course_id
+                ORDER BY s.id DESC";
+        
+        $result = mysqli_query($con, $sql);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $students[] = $row;
+            }
+        }
+        return $students;
+    }
+
+    public function deleteImageFile(string $filename): bool {
+        if (empty($filename)) return false;
+        
+        $path = dirname(__DIR__, 2) . '/images/student/' . $filename;
+        if (file_exists($path)) {
+            return @unlink($path);
+        }
+        return true;
     }
 
     public function findById(int $id): ?array

@@ -11,9 +11,20 @@ class StudentController
         $this->service = new StudentService();
     }
 
-    public function list()
-    {
+    public function list() {
         requireAdmin();
+        if (isset($_GET['del'])) {
+            $id = (int)$_GET['del'];
+            $result = $this->service->deleteStudent($id);
+
+            if ($result === true) {
+                $_SESSION['flash_message'] = "Đã xóa sinh viên thành công!";
+            } else {
+                $_SESSION['flash_message'] = "Lỗi: " . $result;
+            }
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+            exit;
+        }
         $students = $this->service->getAllStudents();
         ob_start();
         include __DIR__ . '/../presentation/student/list.php';

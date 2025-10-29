@@ -8,7 +8,7 @@ class StudentService {
     }
 
     public function getAllStudents() {
-        return $this->repo->findAll();
+        return $this->repo->findAllWithCourse();
     }
 
     public function getStudentById($id) {
@@ -144,6 +144,22 @@ class StudentService {
     }
 
     public function deleteStudent($id) {
-        return $this->repo->delete((int)$id);
+        $id = (int)$id;
+        if ($id <= 0) {
+            return "ID sinh viên không hợp lệ.";
+        }
+        $student = $this->repo->findById($id);
+        if (!$student) {
+            return "Không tìm thấy sinh viên.";
+        }
+        $deleted = $this->repo->delete($id);
+        if (!$deleted) {
+            return "Lỗi khi xóa sinh viên khỏi cơ sở dữ liệu.";
+        }
+        if (!empty($student['image'])) {
+            $this->repo->deleteImageFile($student['image']);
+        }
+        
+        return true;
     }
 }
