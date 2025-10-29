@@ -136,6 +136,19 @@ if ($page === 'fee') {
     exit;
 }
 
+if ($page === 'register') {
+    require_once __DIR__ . '/controllers/RegistrationController.php';
+    $ctrl = new RegistrationController();
+
+    switch ($action) {
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
+    exit;
+}
+
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
 
