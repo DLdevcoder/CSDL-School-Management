@@ -11,12 +11,11 @@ session_start();
 if (!isset($_SESSION['user_name'])) {
     // Redirect user to login page
     header('Location: login.php');
-    exit; // dừng kịch bản sau redirect
+    exit;
 }
 $page = $_GET['page'] ?? 'dashboard';
 $action = $_GET['action'] ?? 'list';
 
-// trong file index.php
 
 if ($page === 'student') {
     require_once __DIR__ . '/controllers/StudentController.php';
@@ -121,6 +120,19 @@ if ($page === 'expenses') {
     exit;
 }
 
+if ($page === 'fee') {
+    require_once __DIR__ . '/controllers/FeeController.php';
+    $ctrl = new FeeController();
+
+    switch ($action) {
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
+    exit;
+}
+
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
 
@@ -132,7 +144,7 @@ $studentsPerClass = $dashboardService->getStudentsPerClass(10);
 $feesSummary = $dashboardService->getTotalFees();
 $totalExpenses = $dashboardService->getTotalExpenses();
 $recentExpenses = $dashboardService->getRecentExpenses(10);
-// ...existing code...
+
 ?>
 <div class="container-fluid">
     <div class="row">
