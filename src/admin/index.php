@@ -92,6 +92,19 @@ if ($page === 'exam') {
     exit;
 }
 
+if ($page === 'expenses') {
+    require_once __DIR__ . '/controllers/ExpenseController.php';
+    $ctrl = new ExpenseController();
+
+    switch ($action) {
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
+    exit;
+}
+
 require_once('presentation/partials/top.php');
 require_once('inc/db.php');
 
