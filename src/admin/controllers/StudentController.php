@@ -98,4 +98,34 @@ class StudentController
         header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
         exit;
     }
+
+    public function view() {
+        requireAdmin();
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+            exit;
+        }
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addFees'])) {
+            $result = $this->service->addFeeForStudent($id, $_POST);
+            if ($result === true) {
+                $_SESSION['flash_message'] = "Thêm học phí thành công!";
+            } else {
+                $_SESSION['flash_message'] = "Lỗi: " . $result;
+            }
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=view&id=' . $id);
+            exit;
+        }
+        $studentDetails = $this->service->getStudentDetails($id);
+        if (!$studentDetails) {
+            $_SESSION['flash_message'] = "Lỗi: Không tìm thấy sinh viên!";
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+            exit;
+        }
+
+        ob_start();
+        include __DIR__ . '/../presentation/student/view.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }

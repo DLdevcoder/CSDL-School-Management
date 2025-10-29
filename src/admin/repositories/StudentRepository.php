@@ -93,6 +93,89 @@ class StudentRepository
         return $row ?: null;
     }
 
+    public function findByIdWithCourse(int $id): ?array {
+        global $con;
+        $sql = "SELECT s.*, c.course_name 
+                FROM student s
+                LEFT JOIN courses c ON s.batch = c.course_id
+                WHERE s.id = ? LIMIT 1";
+        
+        $stmt = mysqli_prepare($con, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $student = mysqli_fetch_assoc($result);
+        mysqli_stmt_close($stmt);
+        return $student ?: null;
+    }
+
+    public function findFeesByStudentId(int $studentId): array {
+        global $con;
+        $fees = [];
+        $stmt = mysqli_prepare($con, "SELECT * FROM fee WHERE studentId = ? ORDER BY date DESC");
+        mysqli_stmt_bind_param($stmt, 'i', $studentId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) $fees[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+        return $fees;
+    }
+
+    public function findResultsByStudentId(int $studentId): array {
+        global $con;
+        $results = [];
+        $stmt = mysqli_prepare($con, "SELECT * FROM result WHERE studentId = ? ORDER BY date DESC");
+        mysqli_stmt_bind_param($stmt, 'i', $studentId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) $results[] = $row;
+        }
+        mysqli_stmt_close($stmt);
+        return $results;
+    }
+    
+    public function getAttendanceStats(int $studentId): array {
+        global $con;
+        $stats = ['present' => 0, 'absent' => 0];
+        $sql = "SELECT attendance, COUNT(*) as count FROM attendance WHERE studentId = ? GROUP BY attendance";
+        $stmt = mysqli_prepare($con, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $studentId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                if ($row['attendance'] === 'Present') {
+                    $stats['present'] = (int)$row['count'];
+                } elseif ($row['attendance'] === 'Absent') {
+                    $stats['absent'] = (int)$row['count'];
+                }
+            }
+        }
+        mysqli_stmt_close($stmt);
+        return $stats;
+    }
+
+    public function addFee(array $data): bool {
+        global $con;
+        $sql = "INSERT INTO fee(studentId, classId, batchId, fees, rNo, date) VALUES (?, ?, ?, ?, ?, NOW())";
+        $stmt = mysqli_prepare($con, $sql);
+        mysqli_stmt_bind_param(
+            $stmt, 
+            'iiids',
+            $data['studentId'],
+            $data['classId'],
+            $data['batchId'],
+            $data['amount'],
+            $data['receiptNo']
+        );
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return (bool)$ok;
+    }
+
     public function update(int $id, array $data): bool
     {
         global $con;

@@ -16,13 +16,26 @@ if (!isset($_SESSION['user_name'])) {
 $page = $_GET['page'] ?? 'dashboard';
 $action = $_GET['action'] ?? 'list';
 
+// trong file index.php
+
 if ($page === 'student') {
     require_once __DIR__ . '/controllers/StudentController.php';
     $ctrl = new StudentController();
-    if ($action === 'list') $ctrl->list();
-    elseif ($action === 'create' || $action === 'add') $ctrl->create();
-    elseif ($action === 'edit') $ctrl->edit();
-    elseif ($action === 'delete') $ctrl->delete();
+    switch ($action) {
+        case 'create':
+            $ctrl->create();
+            break;
+        case 'edit':
+            $ctrl->edit();
+            break;
+        case 'view':
+            $ctrl->view();
+            break;
+        case 'list':
+        default:
+            $ctrl->list();
+            break;
+    }
     exit;
 }
 

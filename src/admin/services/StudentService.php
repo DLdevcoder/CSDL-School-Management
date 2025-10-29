@@ -162,4 +162,46 @@ class StudentService {
         
         return true;
     }
+
+    public function getStudentDetails(int $id): ?array {
+        if ($id <= 0) return null;
+
+        $studentProfile = $this->repo->findByIdWithCourse($id);
+        if (!$studentProfile) return null;
+
+        $feeHistory = $this->repo->findFeesByStudentId($id);
+        $totalPaid = 0;
+        foreach ($feeHistory as $fee) {
+            $totalPaid += $fee['fees'];
+        }
+
+        return [
+            'profile' => $studentProfile,
+            'fees' => [
+                'history' => $feeHistory,
+                'total_paid' => $totalPaid,
+                'remaining' => $studentProfile['fee'] - $totalPaid
+            ],
+            'results' => $this->repo->findResultsByStudentId($id),
+            'attendance' => $this->repo->getAttendanceStats($id)
+        ];
+    }
+
+    public function addFeeForStudent(int $studentId, array $postData) {
+        if (!is_numeric($postData['feepaid']) || $postData['feepaid'] <= 0) {
+            return "Số tiền học phí không hợp lệ.";
+        }
+        $student = $this->repo->findById($studentId);
+        if (!$student) return "Không tìm thấy sinh viên.";
+
+        $data = [
+            'studentId' => $studentId,
+            'classId' => $student['class'],
+            'batchId' => $student['batch'],
+            'amount' => (float)$postData['feepaid'],
+            'receiptNo' => trim($postData['rNo'])
+        ];
+        
+        return $this->repo->addFee($data) ? true : "Lỗi khi thêm học phí.";
+    }
 }
