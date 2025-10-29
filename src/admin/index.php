@@ -97,6 +97,9 @@ if ($page === 'expenses') {
     $ctrl = new ExpenseController();
 
     switch ($action) {
+        case 'create':
+            $ctrl->create();
+            break;
         case 'list':
         default:
             $ctrl->list();

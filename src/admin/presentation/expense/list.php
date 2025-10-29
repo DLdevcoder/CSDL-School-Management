@@ -1,6 +1,6 @@
 <h2 class="text-center text-white bg-primary p-2">Chi tiết chi phí</h2>
 <div class="text-right">
-    <a href="index.php?page=expense&action=create" class="btn btn-outline-primary">Thêm chi phí</a>
+    <a href="index.php?page=expenses&action=create" class="btn btn-outline-primary">Thêm chi phí</a>
     <hr>
 </div>
 

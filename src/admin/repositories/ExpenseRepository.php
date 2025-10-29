@@ -28,4 +28,25 @@ class ExpenseRepository {
         mysqli_stmt_close($stmt);
         return (bool)$ok;
     }
+
+    public function insert(array $data): bool {
+        global $con;
+        $sql = "INSERT INTO expenses (particular, date, amt) VALUES (?, ?, ?)";
+        
+        $stmt = mysqli_prepare($con, $sql);
+        if (!$stmt) {
+            return false;
+        }
+        mysqli_stmt_bind_param(
+            $stmt, 
+            'ssd',
+            $data['particular'],
+            $data['date'],
+            $data['amount']
+        );
+
+        $ok = mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+        return (bool)$ok;
+    }
 }
