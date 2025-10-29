@@ -47,4 +47,22 @@ class AttendanceRepository {
         mysqli_stmt_close($stmt);
         return $ok;
     }
+
+    public function findHistoryByStudentId(int $studentId): array {
+        global $con;
+        $history = [];
+        $sql = "SELECT attendance, date FROM attendance WHERE studentId = ? ORDER BY date DESC";
+        
+        $stmt = mysqli_prepare($con, $sql);
+        mysqli_stmt_bind_param($stmt, 'i', $studentId);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $history[] = $row;
+            }
+        }
+        mysqli_stmt_close($stmt);
+        return $history;
+    }
 }

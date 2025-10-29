@@ -37,4 +37,22 @@ class AttendanceController {
         $content = ob_get_clean();
         include __DIR__ . '/../presentation/partials/layout.php';
     }
+
+    public function history() {
+        requireAdmin();
+        $id = (int)($_GET['id'] ?? 0);
+
+        $data = $this->service->getAttendanceHistory($id);
+
+        if ($data === null) {
+            $_SESSION['flash_message'] = "Lỗi: Không tìm thấy sinh viên hoặc ID không hợp lệ.";
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
+            exit;
+        }
+
+        ob_start();
+        include __DIR__ . '/../presentation/attendance/history.php';
+        $content = ob_get_clean();
+        include __DIR__ . '/../presentation/partials/layout.php';
+    }
 }

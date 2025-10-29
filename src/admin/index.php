@@ -80,6 +80,9 @@ if ($page === 'attendance') {
     $ctrl = new AttendanceController();
 
     switch ($action) {
+        case 'history':
+            $ctrl->history();
+            break;
         case 'take':
         default:
             $ctrl->take();

@@ -1,11 +1,14 @@
 <?php
 require_once __DIR__ . '/../repositories/AttendanceRepository.php';
+require_once __DIR__ . '/../repositories/StudentRepository.php';
 
 class AttendanceService {
     protected AttendanceRepository $repo;
+    protected StudentRepository $studentRepo;
 
     public function __construct() {
         $this->repo = new AttendanceRepository();
+        $this->studentRepo = new StudentRepository();
     }
 
     public function getStudentsForAttendance(int $courseId): array {
@@ -35,5 +38,19 @@ class AttendanceService {
 
         $ok = $this->repo->saveBulkAttendance($records);
         return $ok ? true : "Lỗi khi lưu dữ liệu điểm danh.";
+    }
+
+    public function getAttendanceHistory(int $studentId): ?array {
+        if ($studentId <= 0) return null;
+
+        $student = $this->studentRepo->findById($studentId);
+        if (!$student) return null;
+
+        $history = $this->repo->findHistoryByStudentId($studentId);
+
+        return [
+            'student' => $student,
+            'history' => $history
+        ];
     }
 }
