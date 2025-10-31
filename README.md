@@ -1,11 +1,7 @@
 # CSDL-School Management
 
-Dự án BTL môn CSDL được nhóm mình thiết kế và phát triển trong vòng 3 tuần, với đề tài là phần mềm quản lý trường học dưới dạng 1 trang web. Trang web hiện tại vẫn còn nhiều chức năng chưa hoàn thiện, nhưng đã có đủ một số chức năng CRUD cơ bản nhất.
-
-## Các thành viên của nhóm
-- Trần Tuấn Anh - 21020281
-- Trần Tuấn Việt - 
-- Ma Thanh Thiện -
+## Thành viên của nhóm
+- Đặng Tuần Long - 23021614 (DLdevcoder)
 
 ## Các công nghệ đã sử dụng
 - Bootstrap
