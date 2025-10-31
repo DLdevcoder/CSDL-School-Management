@@ -21,6 +21,8 @@
 - Tạo Repository cho mỗi thực thể (ví dụ StudentRepository, FeeRepository) — chuyển mọi SQL từ view sang repository.
 - Đưa business logic vào Service layer (ví dụ StudentService) để controller chỉ điều phối request/response.
 
+Ngoài ra version này cũng đã thay đổi, điều chỉnh 1 số câu lệnh SQL để tránh lỗi do các lệnh SQL trước đó trong dự án có thể lỗi.
+
 ![alt](database.png)
 
 ## Các chức năng của trang web
