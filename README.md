@@ -2,7 +2,7 @@
 
 ## Thành viên của nhóm
 - Đặng Tuần Long - 23021614 (DLdevcoder)
-
+- Ngọ Viết Thuyết - 23021730 
 ## Các công nghệ đã sử dụng
 - Bootstrap
 - Jquery
