@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../repositories/CourseRepository.php';
+require_once __DIR__ . '/../validator/CourseValidator.php';
 
 class CourseService {
     protected CourseRepository $repo;
@@ -16,60 +17,72 @@ class CourseService {
         return $courses;
     }
 
-    public function deleteCourse(int $id): bool {
-        if ($id <= 0) return false;
+    public function deleteCourse(int $id): bool|string {
+        $error = CourseValidator::validateIdCourse($id);
+        if ($error) return $error;
         return $this->repo->delete($id);
     }
 
-    public function createCourse(array $post) {
+    public function createCourse(array $post): bool|string {
         $courseName = trim($post['courseName'] ?? '');
-        if ($courseName === '') {
-            return 'Tên khóa học không được để trống.';
-        }
         $fee = trim($post['fee'] ?? '');
-        if (!is_numeric($fee) || $fee < 0) {
-            return 'Học phí không hợp lệ.';
+        $class = (int)($post['class'] ?? 0);
+        $duration = trim($post['duration'] ?? '');
+        $date = $post['date'] ?? null;
+
+        // ✅ Gọi các hàm validator
+        $errors = [];
+        if ($err = CourseValidator::validateCourseName($courseName)) $errors[] = $err;
+        if ($err = CourseValidator::validateFee($fee)) $errors[] = $err;
+
+        if (!empty($errors)) {
+            return implode(' ', $errors); // Trả về tất cả lỗi trong 1 chuỗi
         }
+
         $data = [
             'course_name' => $courseName,
-            'class' => (int)($post['class'] ?? 0),
-            'duration' => trim($post['duration'] ?? ''),
+            'class' => $class,
+            'duration' => $duration,
             'fee' => $fee,
-            'date' => $post['date'] ?? null,
+            'date' => $date,
         ];
 
         $ok = $this->repo->insert($data);
-        
         return $ok ? true : 'Đã xảy ra lỗi khi thêm vào cơ sở dữ liệu.';
     }
 
     public function getCourseById(int $id): ?array {
-        if ($id <= 0) return null;
+        $error = CourseValidator::validateIdCourse($id);
+        if ($error) return null;
         return $this->repo->findById($id);
     }
 
-    public function updateCourse(int $id, array $post) {
+    public function updateCourse(int $id, array $post): bool|string {
         $courseName = trim($post['courseName'] ?? '');
-        if ($courseName === '') {
-            return 'Tên khóa học không được để trống.';
-        }
         $fee = trim($post['fee'] ?? '');
-        if (!is_numeric($fee) || $fee < 0) {
-            return 'Học phí không hợp lệ.';
+        $class = (int)($post['class'] ?? 0);
+        $duration = trim($post['duration'] ?? '');
+        $date = $post['date'] ?? null;
+
+        // ✅ Gọi các validator
+        $errors = [];
+        if ($err = CourseValidator::validateIdCourse($id)) $errors[] = $err;
+        if ($err = CourseValidator::validateCourseName($courseName)) $errors[] = $err;
+        if ($err = CourseValidator::validateFee($fee)) $errors[] = $err;
+
+        if (!empty($errors)) {
+            return implode(' ', $errors);
         }
-        if ($id <= 0) {
-            return 'ID khóa học không hợp lệ.';
-        }
+
         $data = [
             'course_name' => $courseName,
-            'class' => (int)($post['class'] ?? 0),
-            'duration' => trim($post['duration'] ?? ''),
+            'class' => $class,
+            'duration' => $duration,
             'fee' => $fee,
-            'date' => $post['date'] ?? null,
+            'date' => $date,
         ];
 
         $ok = $this->repo->update($id, $data);
-        
         return $ok ? true : 'Đã xảy ra lỗi khi cập nhật cơ sở dữ liệu.';
     }
 }

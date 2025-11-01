@@ -1,20 +1,25 @@
 <?php
 require_once __DIR__ . '/../repositories/StudentRepository.php';
+require_once __DIR__ . '/../validators/StudentValidator.php';
 
 class StudentService {
-    protected $repo;
+    protected StudentRepository $repo;
+
     public function __construct() {
         $this->repo = new StudentRepository();
     }
 
-    public function getAllStudents() {
+    // === Lấy danh sách học sinh ===
+    public function getAllStudents(): array {
         return $this->repo->findAllWithCourse();
     }
 
-    public function getStudentById($id) {
+    // === Lấy thông tin chi tiết học sinh theo ID ===
+    public function getStudentById(int $id): ?array {
         return $this->repo->findById($id);
     }
 
+    // === Lấy các danh sách chọn trong form ===
     public function getFormOptions(): array {
         return [
             'courses' => $this->repo->getCourses(),
@@ -23,91 +28,57 @@ class StudentService {
         ];
     }
 
+    // === Tạo mới học sinh ===
     public function createStudent(array $post, array $files) {
-        // basic validation
-        $name = trim($post['studentName'] ?? '');
-        if ($name === '') return 'Tên học sinh không được để trống.';
-        $class = (int)($post['class'] ?? 0);
-        if ($class <= 0) return 'Lớp không hợp lệ.';
-        $batch = (int)($post['batch'] ?? 0);
-        $mobile = trim($post['mobile'] ?? '');
-        if ($mobile === '') return 'Số điện thoại không được để trống.';
-        $email = trim($post['email'] ?? '');
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return 'Email không hợp lệ.';
-        $fee = $post['fee'] ?? '0';
-        if (!is_numeric($fee)) return 'Học phí phải là số.';
-        $password = trim($post['password'] ?? '');
+        $valid = StudentValidator::validateCreate($post, $files);
+        if ($valid !== true) return $valid;
 
-        $subject = '';
-        if (!empty($post['sub']) && is_array($post['sub'])) {
-            $subject = implode(',', array_map('trim', $post['sub']));
-        }
-        $cexam = '';
-        if (!empty($post['com']) && is_array($post['com'])) {
-            $cexam = implode(',', array_map('trim', $post['com']));
-        }
+        $subject = !empty($post['sub']) ? implode(',', array_map('trim', $post['sub'])) : '';
+        $cexam = !empty($post['com']) ? implode(',', array_map('trim', $post['com'])) : '';
 
         $imageName = null;
-        if (!empty($files['u_image'])) {
+        if (!empty($files['u_image']) && !empty($files['u_image']['tmp_name'])) {
             $saved = $this->repo->saveImage($files['u_image']);
-            if ($saved === false) {
-                return 'Không thể lưu ảnh upload.';
-            }
+            if ($saved === false) return 'Không thể lưu ảnh upload.';
             $imageName = $saved;
-        } else {
-            $imageName = null;
         }
 
         $data = [
-            'name' => $name,
+            'name' => trim($post['studentName']),
             'address' => trim($post['address'] ?? ''),
-            'class' => $class,
-            'batch' => $batch,
+            'class' => (int)$post['class'],
+            'batch' => (int)($post['batch'] ?? 0),
             'medium' => trim($post['medium'] ?? ''),
             'gender' => trim($post['gender'] ?? ''),
-            'mobile' => $mobile,
-            'email' => $email,
+            'mobile' => trim($post['mobile']),
+            'email' => trim($post['email']),
             'school' => trim($post['school'] ?? ''),
-            'fee' => $fee,
-            'password' => password_hash($password, PASSWORD_DEFAULT),
+            'fee' => $post['fee'],
+            'password' => password_hash(trim($post['password'] ?? ''), PASSWORD_DEFAULT),
             'subject' => $subject,
             'cexam' => $cexam,
             'dob' => $post['date'] ?? null,
             'image' => $imageName ?? '',
         ];
 
-        $ok = $this->repo->insert($data);
-        if (!$ok) return 'Lỗi khi lưu vào cơ sở dữ liệu.';
-        return true;
+        return $this->repo->insert($data)
+            ? true
+            : 'Lỗi khi lưu vào cơ sở dữ liệu.';
     }
 
+    // === Cập nhật học sinh ===
     public function updateStudent(int $id, array $post, array $files) {
-        $name = trim($post['studentName'] ?? '');
-        if ($name === '') return 'Tên học sinh không được để trống.';
-        $class = (int)($post['class'] ?? 0);
-        if ($class <= 0) return 'Lớp không hợp lệ.';
-        $batch = (int)($post['batch'] ?? 0);
-        $mobile = trim($post['mobile'] ?? '');
-        if ($mobile === '') return 'Số điện thoại không được để trống.';
-        $email = trim($post['email'] ?? '');
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) return 'Email không hợp lệ.';
-        $fee = $post['fee'] ?? '0';
-        if (!is_numeric($fee)) return 'Học phí phải là số.';
-
-        $subject = '';
-        if (!empty($post['sub']) && is_array($post['sub'])) {
-            $subject = implode(',', array_map('trim', $post['sub']));
-        }
-        $cexam = '';
-        if (!empty($post['com']) && is_array($post['com'])) {
-            $cexam = implode(',', array_map('trim', $post['com']));
-        }
+        $valid = StudentValidator::validateUpdate($post, $files);
+        if ($valid !== true) return $valid;
 
         $existing = $this->repo->findById($id);
         if (!$existing) return 'Học sinh không tồn tại.';
 
+        $subject = !empty($post['sub']) ? implode(',', array_map('trim', $post['sub'])) : '';
+        $cexam = !empty($post['com']) ? implode(',', array_map('trim', $post['com'])) : '';
+
         $imageName = $existing['image'] ?? '';
-        if (!empty($files['u_image']) && !empty($files['u_image']['tmp_name'])) {
+        if (!empty($files['u_image']['tmp_name'])) {
             $saved = $this->repo->saveImage($files['u_image']);
             if ($saved === false) return 'Không thể lưu ảnh upload.';
             $imageName = $saved;
@@ -115,22 +86,22 @@ class StudentService {
 
         $password = trim($post['password'] ?? '');
         if ($password === '') {
-            $password = $existing['password'] ?? '';
+            $password = $existing['password'];
         } else {
             $password = password_hash($password, PASSWORD_DEFAULT);
         }
 
         $data = [
-            'name' => $name,
+            'name' => trim($post['studentName']),
             'address' => trim($post['address'] ?? ''),
-            'class' => $class,
-            'batch' => $batch,
+            'class' => (int)$post['class'],
+            'batch' => (int)($post['batch'] ?? 0),
             'medium' => trim($post['medium'] ?? ''),
             'gender' => trim($post['gender'] ?? ''),
-            'mobile' => $mobile,
-            'email' => $email,
+            'mobile' => trim($post['mobile']),
+            'email' => trim($post['email']),
             'school' => trim($post['school'] ?? ''),
-            'fee' => (string)$fee,
+            'fee' => (string)$post['fee'],
             'password' => $password,
             'subject' => $subject,
             'cexam' => $cexam,
@@ -138,31 +109,29 @@ class StudentService {
             'image' => $imageName,
         ];
 
-        $ok = $this->repo->update($id, $data);
-        if (!$ok) return 'Lỗi khi cập nhật cơ sở dữ liệu.';
-        return true;
+        return $this->repo->update($id, $data)
+            ? true
+            : 'Lỗi khi cập nhật cơ sở dữ liệu.';
     }
 
-    public function deleteStudent($id) {
-        $id = (int)$id;
-        if ($id <= 0) {
-            return "ID sinh viên không hợp lệ.";
-        }
+    // === Xóa học sinh ===
+    public function deleteStudent(int $id) {
+        if ($id <= 0) return "ID sinh viên không hợp lệ.";
+
         $student = $this->repo->findById($id);
-        if (!$student) {
-            return "Không tìm thấy sinh viên.";
-        }
+        if (!$student) return "Không tìm thấy sinh viên.";
+
         $deleted = $this->repo->delete($id);
-        if (!$deleted) {
-            return "Lỗi khi xóa sinh viên khỏi cơ sở dữ liệu.";
-        }
+        if (!$deleted) return "Lỗi khi xóa sinh viên khỏi cơ sở dữ liệu.";
+
         if (!empty($student['image'])) {
             $this->repo->deleteImageFile($student['image']);
         }
-        
+
         return true;
     }
 
+    // === Xem chi tiết học sinh (hồ sơ + học phí + điểm + chuyên cần) ===
     public function getStudentDetails(int $id): ?array {
         if ($id <= 0) return null;
 
@@ -170,10 +139,7 @@ class StudentService {
         if (!$studentProfile) return null;
 
         $feeHistory = $this->repo->findFeesByStudentId($id);
-        $totalPaid = 0;
-        foreach ($feeHistory as $fee) {
-            $totalPaid += $fee['fees'];
-        }
+        $totalPaid = array_sum(array_column($feeHistory, 'fees'));
 
         return [
             'profile' => $studentProfile,
@@ -187,10 +153,11 @@ class StudentService {
         ];
     }
 
+    // === Thêm học phí cho sinh viên ===
     public function addFeeForStudent(int $studentId, array $postData) {
-        if (!is_numeric($postData['feepaid']) || $postData['feepaid'] <= 0) {
-            return "Số tiền học phí không hợp lệ.";
-        }
+        $valid = StudentValidator::validateFee($postData);
+        if ($valid !== true) return $valid;
+
         $student = $this->repo->findById($studentId);
         if (!$student) return "Không tìm thấy sinh viên.";
 
@@ -201,7 +168,9 @@ class StudentService {
             'amount' => (float)$postData['feepaid'],
             'receiptNo' => trim($postData['rNo'])
         ];
-        
-        return $this->repo->addFee($data) ? true : "Lỗi khi thêm học phí.";
+
+        return $this->repo->addFee($data)
+            ? true
+            : "Lỗi khi thêm học phí.";
     }
 }

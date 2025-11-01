@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/../repositories/ExamRepository.php';
-
+require_once __DIR__ . '/../validator/ExamValidator.php';
 class ExamService {
     protected ExamRepository $repo;
 
@@ -31,23 +31,31 @@ class ExamService {
         ];
     }
     
-    public function createExam(array $post) {
-        if (empty(trim($post['batchName']))) {
-            return "Tên khóa học không được để trống.";
+    public function createExam(array $post): bool|string {
+        $batchName = trim($post['batchName'] ?? '');
+        $subjects = $post['subjects'] ?? [];
+        $totalMark = $post['totalMark'] ?? null;
+        $date = $post['date'] ?? null;
+        $class = (int)($post['class'] ?? 0);
+
+        // ✅ Gọi validator
+        $errors = [];
+        if ($err = ExamValidator::validateBatchName($batchName)) $errors[] = $err;
+        if ($err = ExamValidator::validateSubjects($subjects)) $errors[] = $err;
+        if ($err = ExamValidator::validateTotalMark($totalMark)) $errors[] = $err;
+
+        if (!empty($errors)) {
+            // Trả về chuỗi lỗi nối lại hoặc mảng tùy cách bạn xử lý ở view
+            return implode(' ', $errors);
         }
-        if (empty($post['subjects']) || !is_array($post['subjects'])) {
-            return "Bạn phải chọn ít nhất một môn học.";
-        }
-        if (!is_numeric($post['totalMark'])) {
-            return "Tổng điểm phải là một con số.";
-        }
-        $subjectString = implode(', ', $post['subjects']);
+
+        $subjectString = implode(', ', $subjects);
         $data = [
-            'batchName' => trim($post['batchName']),
-            'date' => $post['date'],
+            'batchName' => $batchName,
+            'date' => $date,
             'subject' => $subjectString,
-            'class' => (int)$post['class'],
-            'totalMark' => $post['totalMark']
+            'class' => $class,
+            'totalMark' => $totalMark
         ];
 
         $ok = $this->repo->insert($data);

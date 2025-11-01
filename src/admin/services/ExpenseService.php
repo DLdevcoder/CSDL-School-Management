@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../repositories/ExpenseRepository.php';
+require_once __DIR__ . '/../validator/ExpenseValidator.php';
 
 class ExpenseService {
     protected ExpenseRepository $repo;
@@ -12,33 +13,36 @@ class ExpenseService {
         return $this->repo->findAll();
     }
 
-    public function deleteExpense(int $id) {
-        if ($id <= 0) {
-            return "ID không hợp lệ.";
-        }
+    public function deleteExpense(int $id): bool|string {
+        // ✅ Dùng Validator để kiểm tra ID
+        $error = ExpenseValidator::validateId($id);
+        if ($error) return $error;
 
         $deleted = $this->repo->delete($id);
         if (!$deleted) {
             return "Lỗi khi xóa dữ liệu trong cơ sở dữ liệu.";
         }
-
         return true;
     }
 
-    public function createExpense(array $post) {
+    public function createExpense(array $post): bool|string {
         $particular = trim($post['particular'] ?? '');
-        if ($particular === '') {
-            return "Chi tiết chi phí không được để trống.";
-        }
-
         $amount = $post['amt'] ?? '';
-        if (!is_numeric($amount) || $amount < 0) {
-            return "Số tiền không hợp lệ.";
+        $date = $post['date'] ?? null;
+
+        // ✅ Gom các lỗi vào một danh sách
+        $errors = [];
+        if ($err = ExpenseValidator::validateParticular($particular)) $errors[] = $err;
+        if ($err = ExpenseValidator::validateAmount($amount)) $errors[] = $err;
+        if ($err = ExpenseValidator::validateDate($date)) $errors[] = $err;
+
+        if (!empty($errors)) {
+            return implode(' ', $errors);
         }
 
         $data = [
             'particular' => $particular,
-            'date' => $post['date'] ?? null,
+            'date' => $date,
             'amount' => (float)$amount
         ];
 
@@ -46,3 +50,4 @@ class ExpenseService {
         return $ok ? true : "Lỗi khi lưu vào cơ sở dữ liệu.";
     }
 }
+?>
