@@ -2,130 +2,181 @@
 require_once __DIR__ . '/../services/StudentService.php';
 require_once __DIR__ . '/../inc/auth.php';
 require_once __DIR__ . '/../inc/base.php';
-class StudentController
-{
+
+class StudentController {
     protected StudentService $service;
 
-    public function __construct()
-    {
-        $this->service = new StudentService();
+    public function __construct(StudentService $service ) {
+        $this->service = $service ?? new StudentService();
     }
 
     public function list() {
-        requireAdmin();
-        if (isset($_GET['del'])) {
-            $id = (int)$_GET['del'];
-            $result = $this->service->deleteStudent($id);
-
-            if ($result === true) {
-                $_SESSION['flash_message'] = "Đã xóa sinh viên thành công!";
-            } else {
-                $_SESSION['flash_message'] = "Lỗi: " . $result;
+        try {
+            requireAdmin();
+            
+            // Xử lý xóa nếu có parameter
+            if (isset($_GET['del'])) {  
+                $id = (int)$_GET['del'];
+                $this->handleDelete($id);
             }
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-            exit;
+
+            $students = $this->service->getAllStudents();
+            $this->renderView('student/list.php', ['students' => $students]);
+            
+        } catch (Exception $e) {
+            $this->handleError($e->getMessage(), 'student/list');
         }
-        $students = $this->service->getAllStudents();
-        ob_start();
-        include __DIR__ . '/../presentation/student/list.php';
-        $content = ob_get_clean();
-        include __DIR__ . '/../presentation/partials/layout.php';
     }
 
-    public function create()
-    {
-        requireAdmin();
-        $error = null;
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $res = $this->service->createStudent($_POST, $_FILES);
-            if ($res === true) {
-                header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-                exit;
-            } else {
-                $error = $res;
-            }
-        }
+    public function create() {
+        try {
+            requireAdmin();
+            
+            $error = null;
+            $options = $this->service->getFormOptions();
 
-        $options = $this->service->getFormOptions();
-        ob_start();
-        include __DIR__ . '/../presentation/student/create.php'; 
-        $content = ob_get_clean();
-        include __DIR__ . '/../presentation/partials/layout.php';
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $this->handleCreateStudent($_POST, $_FILES);
+            }
+
+            $this->renderView('student/create.php', [
+                'options' => $options,
+                'error' => $error,
+                'csrf_token' => generateCsrfToken()
+            ]);
+            
+        } catch (Exception $e) {
+            $this->handleError($e->getMessage(), 'student/create');
+        }
     }
 
     public function edit() {
-        requireAdmin();
+        try {
+            requireAdmin();
 
-        $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-        if ($id <= 0) {
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-            exit;
-        }
-
-        $student = $this->service->getStudentById($id);
-        if (!$student) {
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-            exit;
-        }
-
-        $error = null;
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $res = $this->service->updateStudent($id, $_POST, $_FILES);
-            if ($res === true) {
-                header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-                exit;
-            } else {
-                $error = $res;
-                $student = $this->service->getStudentById($id);
+            $id = $this->getStudentIdFromRequest();
+            $student = $this->service->getStudentById($id);
+            
+            if (!$student) {
+                throw new Exception("Học sinh không tồn tại");
             }
+
+            $error = null;
+            $options = $this->service->getFormOptions();
+
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $this->handleUpdateStudent($id, $_POST, $_FILES);
+            }
+
+            $this->renderView('student/edit.php', [
+                'student' => $student,
+                'options' => $options,
+                'error' => $error,
+                'csrf_token' => generateCsrfToken()
+            ]);
+            
+        } catch (Exception $e) {
+            $this->handleError($e->getMessage(), 'student/list');
         }
+    }
 
-        $options = $this->service->getFormOptions();
+    public function view() {
+        try {
+            requireAdmin();
+            
+            $id = $this->getStudentIdFromRequest();
+            
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addFees'])) {
+                $this->handleAddFee($id, $_POST);
+            }
 
+            $studentDetails = $this->service->getStudentDetails($id);
+            
+            $this->renderView('student/view.php', [
+                'studentDetails' => $studentDetails,
+                'csrf_token' => generateCsrfToken()
+            ]);
+            
+        } catch (Exception $e) {
+            $this->handleError($e->getMessage(), 'student/list');
+        }
+    }
+
+    // === PRIVATE HELPER METHODS ===
+
+    private function handleDelete(int $id): void {
+        try {
+            $this->service->deleteStudent($id);
+            setSuccess("Đã xóa sinh viên thành công!");
+        } catch (Exception $e) {
+            setError("Lỗi: " . $e->getMessage());
+        }
+        
+        $this->redirectToList();
+    }
+
+    private function handleCreateStudent(array $post, array $files): void {
+        $result = $this->service->createStudent($post, $files);
+        if ($result) {
+            setSuccess("Tạo học sinh thành công!");
+            $this->redirectToList();
+        }
+    }
+
+    private function handleUpdateStudent(int $id, array $post, array $files): void {
+        $result = $this->service->updateStudent($id, $post, $files);
+        if ($result) {
+            setSuccess("Cập nhật học sinh thành công!");
+            $this->redirectToList();
+        }
+    }
+
+    private function handleAddFee(int $studentId, array $postData): void {
+        try {
+            $this->service->addFeeForStudent($studentId, $postData);
+            setSuccess("Thêm học phí thành công!");
+        } catch (Exception $e) {
+            setError("Lỗi: " . $e->getMessage());
+        }
+        
+        $this->redirectToView($studentId);
+    }
+
+    private function getStudentIdFromRequest(): int {
+        $id = (int)($_GET['id'] ?? 0);
+        if ($id <= 0) {
+            throw new InvalidArgumentException("ID học sinh không hợp lệ");
+        }
+        return $id;
+    }
+
+    private function renderView(string $viewPath, array $data = []): void {
         ob_start();
-        include __DIR__ . '/../presentation/student/edit.php'; 
+        extract($data);
+        include __DIR__ . '/../presentation/' . $viewPath;
         $content = ob_get_clean();
         include __DIR__ . '/../presentation/partials/layout.php';
     }
 
-    public function delete()
-    {
-        requireAdmin();
-        $id = $_GET['id'] ?? null;
-        if ($id) {
-            $this->service->deleteStudent($id);
+    private function handleError(string $message, string $redirectPage = 'student/list'): void {
+        error_log("StudentController Error: " . $message);
+        setError($message);
+        
+        if (strpos($redirectPage, 'list') !== false) {
+            $this->redirectToList();
+        } else {
+            header('Location: ' . BASE_URL . '/src/admin/index.php?page=' . $redirectPage);
+            exit;
         }
+    }
+
+    private function redirectToList(): void {
         header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
         exit;
     }
 
-    public function view() {
-        requireAdmin();
-        $id = (int)($_GET['id'] ?? 0);
-        if ($id <= 0) {
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-            exit;
-        }
-        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['addFees'])) {
-            $result = $this->service->addFeeForStudent($id, $_POST);
-            if ($result === true) {
-                $_SESSION['flash_message'] = "Thêm học phí thành công!";
-            } else {
-                $_SESSION['flash_message'] = "Lỗi: " . $result;
-            }
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=view&id=' . $id);
-            exit;
-        }
-        $studentDetails = $this->service->getStudentDetails($id);
-        if (!$studentDetails) {
-            $_SESSION['flash_message'] = "Lỗi: Không tìm thấy sinh viên!";
-            header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=list');
-            exit;
-        }
-
-        ob_start();
-        include __DIR__ . '/../presentation/student/view.php';
-        $content = ob_get_clean();
-        include __DIR__ . '/../presentation/partials/layout.php';
+    private function redirectToView(int $studentId): void {
+        header('Location: ' . BASE_URL . '/src/admin/index.php?page=student&action=view&id=' . $studentId);
+        exit;
     }
 }
